@@ -4,6 +4,9 @@ const db = require('./db')
 const Person = require('./models/person.models.schema')
 const MenuItem = require('./models/menuItems.Schema')
 
+const passport = require('./auth.js')
+
+
 require('dotenv').config()
 const PORT = process.env.PORT || 3001
 
@@ -11,6 +14,19 @@ const PORT = process.env.PORT || 3001
 const bodyParser = require('body-parser')
 app.use(bodyParser.json());         // req.body
 
+
+// Creating Log when users hit any URL:
+const log = (req , res, next)=>{
+    console.log(`${new Date().toLocaleString()} Request made to: ${req.originalUrl}`);
+    next()  // Move to next phase
+}
+app.use(log);
+
+
+// Implementation of Passport for authentication
+app.use(passport.initialize());
+const localAuthMiddleware = passport.authenticate('local' , {session:false})
+app.use(localAuthMiddleware);
 app.get('/' , (req , res)=>{
     res.send("Hello Welcome to my Restraunt.")
 })
