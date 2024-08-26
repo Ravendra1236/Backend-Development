@@ -3,8 +3,9 @@ const app = express();
 const db = require('./db')
 const Person = require('./models/person.models.schema')
 const MenuItem = require('./models/menuItems.Schema')
-const PORT = 3000 ;
 
+require('dotenv').config()
+const PORT = process.env.PORT || 3001
 
 // Middleware to extract body from the http requests
 const bodyParser = require('body-parser')
