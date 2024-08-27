@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const {jwtAuthMiddleware , generateToken} = require('../jwt')
 const Person = require('../models/person.models.schema')
 
 // POST route to add a person
-router.post('/' , async (req , res)=>{
+router.post('/signup' , async (req , res)=>{
     
     try {
         const data = req.body // Assuming that request body contains person data
@@ -13,7 +14,17 @@ router.post('/' , async (req , res)=>{
         const response = await newPerson.save()
         console.log("Data is Saved.");
         
-        res.status(201).json(response)
+        // Creating token with the help of payLoad(username)
+        // const token = generateToken(response.username);
+        const payload = {
+            id : response.id,
+            username: response.username
+        }
+        const token = generateToken(payload);
+        
+        console.log("Token is: " , token);
+        
+        res.status(201).json({response : response , token : token})
 
     }catch(err){
         console.log(err);
@@ -21,7 +32,34 @@ router.post('/' , async (req , res)=>{
     }
     
 })
+// Login Route: For Token
+router.post('/login' , async(req , res)=>{
+    try{
+        const {username , password} = req.body
 
+        // find the user by its username and password
+        const user = await Person.findOne({username:username})
+
+        // If user does not exist in our DB or password is incorrect:
+        if(!(user) || !(await user.comparePassword(password))){
+            return res.status(401).json({error : "Invalid username or password"})
+        }
+        //Generate tokens: 
+        const payload  = {
+            id : user.id ,
+            username : user.username
+        }
+
+        const token = generateToken(payload)
+        //return token
+        res.json(token)
+    }catch(err){
+        console.error(err);
+        res.status(500).json({error : "Internal Server Error."})
+    }
+})
+
+// HWT Auth used : we can get data by token
 router.get('/' , async(req , res)=>{
     try{
             const data = await Person.find()

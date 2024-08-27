@@ -3,7 +3,7 @@ const app = express();
 const db = require('./db')
 const Person = require('./models/person.models.schema')
 const MenuItem = require('./models/menuItems.Schema')
-
+const {jwtAuthMiddleware , generateToken} = require('./jwt')
 const passport = require('./auth.js')
 
 
@@ -26,7 +26,7 @@ app.use(log);
 // Implementation of Passport for authentication
 app.use(passport.initialize());
 const localAuthMiddleware = passport.authenticate('local' , {session:false})
-app.use(localAuthMiddleware);
+// app.use(localAuthMiddleware);
 app.get('/' , (req , res)=>{
     res.send("Hello Welcome to my Restraunt.")
 })
@@ -35,7 +35,7 @@ app.get('/' , (req , res)=>{
 
 // Import the router files and use them
 const personRoutes = require('./routes/personRoutes.js')
-app.use('/person' , personRoutes)
+app.use('/person',jwtAuthMiddleware , personRoutes)
 
 const menuRoutes = require('./routes/menuRoutes.js')
 app.use('/menu' , menuRoutes)
